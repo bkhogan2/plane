@@ -217,18 +217,7 @@ export const GptAssistantPopover: React.FC<Props> = (props) => {
           {...attributes.popper}
         >
           {enableOmniAssistant ? (
-            <div className="flex flex-col gap-3">
-              <div id="omni-assistant-root" className="text-sm">Hello from Assistant</div>
-              <button
-                className="btn btn-primary focus:shadow-outline h-[36px] rounded bg-custom-primary px-3 py-1.5 text-white hover:opacity-90 focus:outline-none"
-                type="button"
-                onClick={() => {
-                  console.log("[OmniAssistantTest] context", { workspaceId, workspaceSlug, projectId });
-                }}
-              >
-                Test context log
-              </button>
-            </div>
+            <></>
           ) : (
             <>
               <div className="vertical-scroll-enable max-h-72 space-y-4 overflow-y-auto">

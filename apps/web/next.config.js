@@ -19,7 +19,15 @@ const nextConfig = {
             ? [
                 {
                   key: "Content-Security-Policy",
-                  value: `default-src 'self'; script-src 'self' ${process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN} 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; frame-ancestors 'self';`,
+                  value: (() => {
+                    const lcApi = process.env.NEXT_PUBLIC_LIBRECHAT_API_BASE || '';
+                    const lcWs = process.env.NEXT_PUBLIC_LIBRECHAT_WS_BASE || '';
+                    const scriptSrc = `script-src 'self' ${process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN} 'unsafe-eval' 'unsafe-inline'`;
+                    const connectSrc = `connect-src 'self' ${lcApi} ${lcWs} ${process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN} http://localhost:8000 ws://localhost:8000`;
+                    const frameSrc = `frame-src 'self' ${process.env.NEXT_PUBLIC_LIBRECHAT_CLIENT_URL || ''}`;
+                    const imgSrc = `img-src 'self' data: blob: https://cdn.jsdelivr.net`;
+                    return `default-src 'self'; ${scriptSrc}; style-src 'self' 'unsafe-inline'; ${imgSrc}; ${connectSrc}; ${frameSrc}; frame-ancestors 'self';`;
+                  })(),
                 },
               ]
             : []),

@@ -18,21 +18,28 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     process.env.NEXT_PUBLIC_ENABLE_OMNI_ASSISTANT === "true";
 
   const assistantOrigin = process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN || "http://localhost:8080";
+  const librechatApiBase = process.env.NEXT_PUBLIC_LIBRECHAT_API_BASE;
+  const librechatWsBase = process.env.NEXT_PUBLIC_LIBRECHAT_WS_BASE;
+  const librechatClientUrl =
+    process.env.NEXT_PUBLIC_LIBRECHAT_CLIENT_URL ||
+    (process.env.NODE_ENV === "development" ? "http://localhost:3081" : undefined);
 
   const { data: user } = useUser();
   const { currentWorkspace } = useWorkspace();
 
   // Mount Assistant plugin in right dock if enabled
   useEffect(() => {
-    if (!enableOmniDock || !enableOmniAssistant) return;
-    const root = document.getElementById("omni-assistant-root");
-    if (!root) return;
+    // Mount whenever the dock is visible; assistant flag may be toggled at build time
+    if (!enableOmniDock) return;
+    const getRoot = () => document.getElementById("omni-assistant-root") as HTMLElement | null;
 
     const scriptId = "assistant-plugin-script";
     const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
     const scriptUrl = `${assistantOrigin.replace(/\/$/, "")}/plugins/assistant/index.js`;
 
     const render = () => {
+      const root = getRoot();
+      if (!root) return;
       // @ts-expect-error - runtime global provided by plugin
       const api = (window as any).AssistantPlugin;
       if (api?.renderAssistant) {
@@ -40,15 +47,36 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           workspaceId: currentWorkspace?.id,
           projectId: undefined,
           userId: user?.id,
+          apiBase: librechatApiBase,
+          wsBase: librechatWsBase,
+          clientUrl: librechatClientUrl,
         });
       } else {
-        if (root.innerHTML === "") root.innerHTML = '<div class="p-3 text-xs text-custom-text-300">Assistant unavailable</div>';
+        // Fallback: mount iframe directly so the dock never looks empty in dev
+        if (librechatClientUrl) {
+          root.innerHTML = "";
+          const iframe = document.createElement("iframe");
+          iframe.src = String(librechatClientUrl);
+          iframe.style.width = "100%";
+          iframe.style.height = "100%";
+          iframe.style.border = "0";
+          root.appendChild(iframe);
+        } else {
+          if (root.innerHTML === "") root.innerHTML = '<div class="p-3 text-xs text-custom-text-300">Assistant unavailable</div>';
+        }
       }
     };
 
     if (existing) {
-      render();
-      return;
+      // If the script tag exists but the global is missing (HMR/navigation), reload the script
+      // @ts-expect-error - runtime global provided by plugin
+      const api = (window as any).AssistantPlugin;
+      if (!api) {
+        existing.parentElement?.removeChild(existing);
+      } else {
+        render();
+        return;
+      }
     }
 
     const s = document.createElement("script");
@@ -57,18 +85,38 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     s.id = scriptId;
     s.onload = render;
     s.onerror = () => {
-      if (root.innerHTML === "") root.innerHTML = '<div class="p-3 text-xs text-custom-text-300">Assistant failed to load</div>';
+      const root = getRoot();
+      if (root && root.innerHTML === "") root.innerHTML = '<div class="p-3 text-xs text-custom-text-300">Assistant failed to load</div>';
     };
+    const rootNow = getRoot();
+    if (rootNow && rootNow.innerHTML === "") rootNow.innerHTML = '<div class="p-3 text-xs text-custom-text-300">Loading assistant…</div>';
     document.body.appendChild(s);
+
+    // Retry render until root and plugin are ready (handles streaming/async layouts)
+    const start = Date.now();
+    const interval = window.setInterval(() => {
+      try {
+        render();
+        // stop once something is mounted
+        const r = getRoot();
+        if (r && (r.querySelector("iframe") || r.innerHTML.includes("Assistant unavailable"))) {
+          window.clearInterval(interval);
+        }
+        if (Date.now() - start > 10000) {
+          window.clearInterval(interval);
+        }
+      } catch {}
+    }, 500);
 
     return () => {
       // optional unmount if plugin exposes it
       // @ts-expect-error - runtime global provided by plugin
       const api = (window as any).AssistantPlugin;
-      if (api?.unmountAssistant) api.unmountAssistant(root);
+      const root = getRoot();
+      if (api?.unmountAssistant && root) api.unmountAssistant(root);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enableOmniDock, enableOmniAssistant, currentWorkspace?.id, user?.id]);
+  }, [enableOmniDock, enableOmniAssistant, currentWorkspace?.id, user?.id, assistantOrigin, librechatClientUrl]);
 
   return (
     <AuthenticationWrapper>
