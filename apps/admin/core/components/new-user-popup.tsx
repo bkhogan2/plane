@@ -11,8 +11,8 @@ import { resolveGeneralTheme } from "@plane/utils";
 // hooks
 import { useTheme } from "@/hooks/store";
 // icons
-import TakeoffIconLight from "/public/logos/takeoff-icon-light.svg";
-import TakeoffIconDark from "/public/logos/takeoff-icon-dark.svg";
+import TakeoffIconLight from "@/public/logos/takeoff-icon-light.svg";
+import TakeoffIconDark from "@/public/logos/takeoff-icon-dark.svg";
 
 export const NewUserPopup: React.FC = observer(() => {
   // hooks

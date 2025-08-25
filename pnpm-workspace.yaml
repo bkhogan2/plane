@@ -7,5 +7,7 @@ packages:
 onlyBuiltDependencies:
   - turbo
   - sharp
+  - "@swc/core"
+  - "esbuild"
 
 useNodeVersion: 22.18.0

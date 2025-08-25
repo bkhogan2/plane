@@ -12,7 +12,18 @@ const nextConfig = {
     return [
       {
         source: "/(.*)?",
-        headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Dev CSP: allow assistant plugin origin
+          ...(process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN
+            ? [
+                {
+                  key: "Content-Security-Policy",
+                  value: `default-src 'self'; script-src 'self' ${process.env.NEXT_PUBLIC_OMNI_PROXY_ORIGIN} 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; frame-ancestors 'self';`,
+                },
+              ]
+            : []),
+        ],
       },
     ];
   },

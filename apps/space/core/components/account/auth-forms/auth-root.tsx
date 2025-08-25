@@ -23,10 +23,10 @@ import { useInstance } from "@/hooks/store/use-instance";
 // types
 import { EAuthModes, EAuthSteps } from "@/types/auth";
 // assets
-import GithubLightLogo from "/public/logos/github-black.png";
-import GithubDarkLogo from "/public/logos/github-dark.svg";
-import GitlabLogo from "/public/logos/gitlab-logo.svg";
-import GoogleLogo from "/public/logos/google-logo.svg";
+import GithubLightLogo from "@/public/logos/github-black.png";
+import GithubDarkLogo from "@/public/logos/github-dark.svg";
+import GitlabLogo from "@/public/logos/gitlab-logo.svg";
+import GoogleLogo from "@/public/logos/google-logo.svg";
 // local imports
 import { TermsAndConditions } from "../terms-and-conditions";
 import { AuthBanner } from "./auth-banner";

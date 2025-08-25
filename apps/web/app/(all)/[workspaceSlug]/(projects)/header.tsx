@@ -5,8 +5,8 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { Home, Shapes } from "lucide-react";
 // images
-import githubBlackImage from "/public/logos/github-black.png";
-import githubWhiteImage from "/public/logos/github-white.png";
+import githubBlackImage from "@/public/logos/github-black.png";
+import githubWhiteImage from "@/public/logos/github-white.png";
 // ui
 import { GITHUB_REDIRECTED_TRACKER_EVENT, HEADER_GITHUB_ICON } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";

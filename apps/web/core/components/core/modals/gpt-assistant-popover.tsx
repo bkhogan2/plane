@@ -188,6 +188,10 @@ export const GptAssistantPopover: React.FC<Props> = (props) => {
       ? "Generate response"
       : "Generate again";
 
+  const enableOmniAssistant =
+    process.env.NEXT_PUBLIC_ENABLE_OMNI_ASSISTANT === "1" ||
+    process.env.NEXT_PUBLIC_ENABLE_OMNI_ASSISTANT === "true";
+
   return (
     <Popover as="div" className={`relative w-min text-left`}>
       <Popover.Button as={Fragment}>
@@ -212,82 +216,99 @@ export const GptAssistantPopover: React.FC<Props> = (props) => {
           style={styles.popper}
           {...attributes.popper}
         >
-          <div className="vertical-scroll-enable max-h-72 space-y-4 overflow-y-auto">
-            {prompt && (
-              <div className="text-sm">
-                Content:
-                <RichTextEditor
-                  editable={false}
-                  id="ai-assistant-content"
-                  initialValue={prompt}
-                  containerClassName="-m-3"
-                  ref={editorRef}
-                  workspaceId={workspaceId}
-                  workspaceSlug={workspaceSlug}
-                  projectId={projectId}
-                />
-              </div>
-            )}
-            {response !== "" && (
-              <div className="page-block-section max-h-[8rem] text-sm">
-                Response:
-                <RichTextEditor
-                  editable={false}
-                  id="ai-assistant-response"
-                  initialValue={`<p>${response}</p>`}
-                  ref={responseRef}
-                  workspaceId={workspaceId}
-                  workspaceSlug={workspaceSlug}
-                  projectId={projectId}
-                />
-              </div>
-            )}
-            {invalidResponse && (
-              <div className="text-sm text-red-500">
-                No response could be generated. This may be due to insufficient content or task information. Please try
-                again.
-              </div>
-            )}
-          </div>
-          <Controller
-            control={control}
-            name="task"
-            render={({ field: { value, onChange, ref } }) => (
-              <Input
-                id="task"
-                name="task"
-                type="text"
-                value={value}
-                onChange={onChange}
-                ref={ref}
-                placeholder={`${
-                  prompt && prompt !== "" ? "Tell AI what action to perform on this content..." : "Ask AI anything..."
-                }`}
-                className="w-full"
-                autoFocus
-              />
-            )}
-          />
-          <div className="flex gap-2 justify-between">
-            {responseActionButton ? (
-              <>{responseActionButton}</>
-            ) : (
-              <>
-                <div className="flex items-start justify-center gap-2 text-sm text-custom-primary">
-                  <AlertCircle className="h-4 w-4" />
-                  <p>By using this feature, you consent to sharing the message with a 3rd party service. </p>
-                </div>
-              </>
-            )}
-            <div className="flex items-center gap-2">
-              <Button variant="neutral-primary" size="sm" onClick={onClose}>
-                Close
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleSubmit(handleAIResponse)} loading={isSubmitting}>
-                {generateResponseButtonText}
-              </Button>
+          {enableOmniAssistant ? (
+            <div className="flex flex-col gap-3">
+              <div id="omni-assistant-root" className="text-sm">Hello from Assistant</div>
+              <button
+                className="btn btn-primary focus:shadow-outline h-[36px] rounded bg-custom-primary px-3 py-1.5 text-white hover:opacity-90 focus:outline-none"
+                type="button"
+                onClick={() => {
+                  console.log("[OmniAssistantTest] context", { workspaceId, workspaceSlug, projectId });
+                }}
+              >
+                Test context log
+              </button>
             </div>
-          </div>
+          ) : (
+            <>
+              <div className="vertical-scroll-enable max-h-72 space-y-4 overflow-y-auto">
+                {prompt && (
+                  <div className="text-sm">
+                    Content:
+                    <RichTextEditor
+                      editable={false}
+                      id="ai-assistant-content"
+                      initialValue={prompt}
+                      containerClassName="-m-3"
+                      ref={editorRef}
+                      workspaceId={workspaceId}
+                      workspaceSlug={workspaceSlug}
+                      projectId={projectId}
+                    />
+                  </div>
+                )}
+                {response !== "" && (
+                  <div className="page-block-section max-h-[8rem] text-sm">
+                    Response:
+                    <RichTextEditor
+                      editable={false}
+                      id="ai-assistant-response"
+                      initialValue={`<p>${response}</p>`}
+                      ref={responseRef}
+                      workspaceId={workspaceId}
+                      workspaceSlug={workspaceSlug}
+                      projectId={projectId}
+                    />
+                  </div>
+                )}
+                {invalidResponse && (
+                  <div className="text-sm text-red-500">
+                    No response could be generated. This may be due to insufficient content or task information. Please try
+                    again.
+                  </div>
+                )}
+              </div>
+              <Controller
+                control={control}
+                name="task"
+                render={({ field: { value, onChange, ref } }) => (
+                  <Input
+                    id="task"
+                    name="task"
+                    type="text"
+                    value={value}
+                    onChange={onChange}
+                    ref={ref}
+                    placeholder={`${
+                      prompt && prompt !== "" ? "Tell AI what action to perform on this content..." : "Ask AI anything..."
+                    }`}
+                    className="w-full"
+                    autoFocus
+                  />
+                )}
+              />
+              <div className="flex gap-2 justify-between">
+                {responseActionButton ? (
+                  <>{responseActionButton}</>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-center gap-2 text-sm text-custom-primary">
+                      <AlertCircle className="h-4 w-4" />
+                      <p>By using this feature, you consent to sharing the message with a 3rd party service. </p>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center gap-2">
+                  <Button variant="neutral-primary" size="sm" onClick={onClose}>
+                    Close
+                  </Button>
+                  <Button variant="primary" size="sm" onClick={handleSubmit(handleAIResponse)} loading={isSubmitting}>
+                    {generateResponseButtonText}
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>
