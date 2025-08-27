@@ -6,7 +6,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 // plane helpers
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Play } from "lucide-react";
 import { useOutsideClickDetector } from "@plane/hooks";
 // types
 import { EIssueServiceType, TIssue, IIssueDisplayProperties, IIssueMap } from "@plane/types";
@@ -67,6 +67,7 @@ const KanbanIssueDetailsBlock: React.FC<IssueDetailsBlockProps> = observer((prop
   const [isMenuActive, setIsMenuActive] = useState(false);
   // hooks
   const { isMobile } = usePlatformOS();
+  const enableHelloButton = process.env.NEXT_PUBLIC_ENABLE_HELLO_WORKFLOW_BUTTON === "true";
 
   const customActionButton = (
     <div
@@ -117,8 +118,31 @@ const KanbanIssueDetailsBlock: React.FC<IssueDetailsBlockProps> = observer((prop
       </div>
 
       <Tooltip tooltipContent={issue.name} isMobile={isMobile} renderByDefault={false}>
-        <div className="w-full line-clamp-1 text-sm text-custom-text-100">
-          <span>{issue.name}</span>
+        <div className="w-full line-clamp-1 text-sm text-custom-text-100 flex items-center gap-1.5">
+          <span className="flex-1 min-w-0 truncate">{issue.name}</span>
+          {enableHelloButton && (
+            <button
+              type="button"
+              className="size-6 grid place-items-center rounded-sm border border-custom-border-300 bg-custom-primary-100 text-white hover:bg-custom-primary-90 flex-shrink-0"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const payload = {
+                  title: issue.name,
+                  workspaceSlug,
+                  projectId: issue.project_id,
+                  issueId: issue.id,
+                };
+                fetch("/api/demo/hello", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload),
+                }).catch(() => {});
+              }}
+            >
+              <Play className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </button>
+          )}
         </div>
       </Tooltip>
 

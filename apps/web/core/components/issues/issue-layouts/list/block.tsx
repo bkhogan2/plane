@@ -5,7 +5,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Play } from "lucide-react";
 // types
 import { EIssueServiceType, TIssue, IIssueDisplayProperties, TIssueMap } from "@plane/types";
 // ui
@@ -133,6 +133,7 @@ export const IssueBlock = observer((props: IssueBlockProps) => {
   const canSelectIssues = canEditIssueProperties && !selectionHelpers.isSelectionDisabled;
 
   const marginLeft = `${spacingLeft}px`;
+  const enableHelloButton = process.env.NEXT_PUBLIC_ENABLE_HELLO_WORKFLOW_BUTTON === "true";
 
   const handleToggleExpand = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -297,6 +298,31 @@ export const IssueBlock = observer((props: IssueBlockProps) => {
         <div className="flex flex-shrink-0 items-center gap-2">
           {!issue?.tempId ? (
             <>
+              {enableHelloButton && (
+                <Tooltip tooltipContent="Run demo" renderByDefault={false}>
+                  <button
+                    type="button"
+                    className="size-6 grid place-items-center rounded-sm border border-custom-border-300 bg-custom-primary-100 text-white hover:bg-custom-primary-90"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const payload = {
+                        title: issue.name,
+                        workspaceSlug,
+                        projectId,
+                        issueId: issue.id,
+                      };
+                      fetch("/api/demo/hello", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                      }).catch(() => {});
+                    }}
+                  >
+                    <Play className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                </Tooltip>
+              )}
               <IssueProperties
                 className={`relative flex flex-wrap ${isSidebarCollapsed ? "md:flex-grow md:flex-shrink-0" : "lg:flex-grow lg:flex-shrink-0"} items-center gap-2 whitespace-nowrap`}
                 issue={issue}
